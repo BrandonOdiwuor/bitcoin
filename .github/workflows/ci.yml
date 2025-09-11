@@ -424,6 +424,16 @@ jobs:
           echo "BASE_ROOT_DIR=${{ runner.temp }}" >> "$GITHUB_ENV"
           echo "BASE_BUILD_DIR=${{ runner.temp }}/build-asan" >> "$GITHUB_ENV"
 
+      - name: Install and use Mold Linker
+        # Use mold, because it is faster than the default linker
+        run: |
+          # Append mold to PACKAGES in the setup script (installed in the container)
+          echo 'export PACKAGES="$PACKAGES mold"' >> ./ci/test/00_setup_env_native_asan.sh
+          # Append mold linker flags to CMAKE_FLAGS for CMake
+          echo 'export BITCOIN_CONFIG="$BITCOIN_CONFIG -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=mold"' >> ./ci/test/00_setup_env_native_asan.sh
+          # Optional: Enable verbose CMake output to confirm mold usage in logs
+          echo 'export BITCOIN_CONFIG="$BITCOIN_CONFIG -DCMAKE_VERBOSE_MAKEFILE=ON"' >> ./ci/test/00_setup_env_native_asan.sh
+
       - name: Restore Ccache cache
         id: ccache-cache
         uses: actions/cache/restore@v4
