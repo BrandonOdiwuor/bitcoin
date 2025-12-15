@@ -77,6 +77,7 @@ string(CONCAT functional_include_content
   "      set_tests_properties(\"bitcoin.functional.\${test_name}\" PROPERTIES\n"
   "        LABELS \"functional\"\n"
   "        WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\"\n"
+  "        SKIP_REGULAR_EXPRESSION \"Test skipped\"\n"
   "      )\n"
   "    endif()\n"
   "  endforeach()\n"
