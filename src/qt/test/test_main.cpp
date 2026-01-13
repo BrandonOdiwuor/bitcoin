@@ -8,12 +8,9 @@
 #include <interfaces/node.h>
 #include <qt/bitcoin.h>
 #include <qt/guiconstants.h>
-#include <qt/test/apptests.h>
-#include <qt/test/optiontests.h>
-#include <qt/test/rpcnestedtests.h>
-#include <qt/test/uritests.h>
 #include <test/util/setup_common.h>
 #include <util/chaintype.h>
+#include <qt/test/util.h>
 
 #ifdef ENABLE_WALLET
 #include <qt/test/addressbooktests.h>
@@ -78,25 +75,40 @@ int main(int argc, char* argv[])
         BitcoinApplication app;
         app.createNode(*init);
 
-        AppTests app_tests(app);
-        num_test_failures += QTest::qExec(&app_tests);
+        TestRegistry& test_registry = GetTestRegistry();
 
-        OptionTests options_tests(app.node());
-        num_test_failures += QTest::qExec(&options_tests);
+        // If the user has specified a *Test suite name, execute that test suite only.
+        for (int index = 1; index < argc; ++index) {
+            if (qstrcmp(argv[index], "-functions") == 0) {
+                for (const QString& test_name : test_registry.keys()) {
+                    qDebug().noquote() << test_name;
+                }
+                return EXIT_SUCCESS;
+            } else if (QString(argv[index]).contains("Test")) {
+                const QString test_name = QString::fromLocal8Bit(argv[index]);
+                if (test_registry.contains(test_name)) {
+                    QStringList args = app.arguments();
+                    const auto test_suite_constructor = test_registry.value(test_name);
+                    QObject* test_suite = (test_suite_constructor)(app);
+                    if (!test_suite) {
+                        qWarning() << "Failed to create test object for " << argv[index];
+                        return EXIT_FAILURE;
+                    }
+                    return QTest::qExec(test_suite, args);
+                } else {
+                    qWarning() << "Test class " << argv[index] << " is unknown\n";
+                    return EXIT_FAILURE;
+                }
+            }
+        }
 
-        URITests test1;
-        num_test_failures += QTest::qExec(&test1);
-
-        RPCNestedTests test3(app.node());
-        num_test_failures += QTest::qExec(&test3);
-
-#ifdef ENABLE_WALLET
-        WalletTests test5(app.node());
-        num_test_failures += QTest::qExec(&test5);
-
-        AddressBookTests test6(app.node());
-        num_test_failures += QTest::qExec(&test6);
-#endif
+        // Otherwise, execute all registered test suites.
+        for (const auto& test_suite_constructor : test_registry.values()) {
+            QObject* test_suite = (test_suite_constructor)(app);
+            if (!test_suite || (QTest::qExec(test_suite, argc, argv)) != 0) {
+                ++num_test_failures; 
+            }
+        }
 
         if (num_test_failures) {
             qWarning("\nFailed tests: %d\n", num_test_failures);

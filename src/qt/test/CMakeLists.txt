@@ -2,6 +2,8 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
+include(DiscoverTests)
+
 set(CMAKE_AUTOMOC_MOC_OPTIONS "-p${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_executable(test_bitcoin-qt
@@ -36,12 +38,14 @@ if(ENABLE_WALLET)
   )
 endif()
 
-add_test(NAME test_bitcoin-qt
-  COMMAND test_bitcoin-qt
+set(QT_TEST_PROPERTIES
+  LABELS "qt.test"
+  SKIP_REGULAR_EXPRESSION "Test is skipped"
 )
+
 if(WIN32 AND VCPKG_TARGET_TRIPLET)
   set(plugin_path "$<SHELL_PATH:$<PATH:GET_PARENT_PATH,$<PATH:GET_PARENT_PATH,$<TARGET_PROPERTY:Qt6::QWindowsIntegrationPlugin,LOCATION_$<CONFIG>>>>>")
-  set_property(TEST test_bitcoin-qt APPEND PROPERTY
+  list(APPEND QT_TEST_PROPERTIES
     ENVIRONMENT_MODIFICATION
       # On Windows, vcpkg configures Qt with `-opengl dynamic`, which makes
       # the "minimal" platform plugin unusable due to internal Qt bugs.
@@ -50,5 +54,13 @@ if(WIN32 AND VCPKG_TARGET_TRIPLET)
   )
   unset(plugin_path)
 endif()
+
+discover_tests(test_bitcoin-qt
+  DISCOVERY_ARGS        [[-functions]]
+  DISCOVERY_MATCH       [[(.+)]]
+  TEST_NAME_REPLACEMENT [[bitcoin.qt.test.\1]]
+  TEST_ARGS_REPLACEMENT [[\1]]
+  PROPERTIES  ${QT_TEST_PROPERTIES}
+)
 
 install_binary_component(test_bitcoin-qt INTERNAL)

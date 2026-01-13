@@ -47,3 +47,48 @@ foreach(script ${functional_tests} fuzz/test_runner.py)
   file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR}/${script} ${CMAKE_CURRENT_BINARY_DIR}/${script} COPY_ON_ERROR ${symlink})
 endforeach()
 unset(functional_tests)
+
+# Functional test discovery
+# Generate a CMake script that will be included by CTest to discover functional tests
+set(functional_include_file "${CMAKE_CURRENT_BINARY_DIR}/functional_tests_include.cmake")
+
+string(CONCAT functional_include_content
+  "# Generated functional test discovery for CTest\n"
+  "# This file is included by CTest to dynamically discover and register functional tests\n"
+  "\n"
+  "execute_process(\n"
+  "  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/functional/list_tests.py\n"
+  "  OUTPUT_VARIABLE functional_test_output\n"
+  "  OUTPUT_STRIP_TRAILING_WHITESPACE\n"
+  "  ERROR_VARIABLE functional_test_error\n"
+  "  ERROR_STRIP_TRAILING_WHITESPACE\n"
+  "  RESULT_VARIABLE functional_test_result\n"
+  "  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}\n"
+  ")\n"
+  "\n"
+  "if(NOT functional_test_result EQUAL 0)\n"
+  "  add_test(bitcoin.functional.DISCOVERY_FAILURE ${Python3_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/functional/list_tests.py)\n"
+  "else()\n"
+  "  string(REPLACE \"\\n\" \";\" functional_test_lines \"\${functional_test_output}\")\n"
+  "  foreach(line IN LISTS functional_test_lines)\n"
+  "    string(REPLACE \" \" \";\" parts \"\${line}\")\n"
+  "    list(GET parts 0 test_script)\n"
+  "    list(REMOVE_AT parts 0)\n"
+  "    if(test_script MATCHES \"^(.+\\\\.py)$\")\n"
+  "      add_test(\"bitcoin.functional.\${line}\" ${Python3_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/functional/\${test_script} \${parts})\n"
+  "      set_tests_properties(\"bitcoin.functional.\${line}\" PROPERTIES\n"
+  "        LABELS \"functional\"\n"
+  "        WORKING_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}\"\n"
+  "        SKIP_REGULAR_EXPRESSION \"Test skipped\"\n"
+  "      )\n"
+  "    endif()\n"
+  "  endforeach()\n"
+  "endif()\n"
+)
+
+file(GENERATE
+  OUTPUT "${functional_include_file}"
+  CONTENT "${functional_include_content}"
+)
+
+set_property(DIRECTORY APPEND PROPERTY TEST_INCLUDE_FILES "${functional_include_file}")

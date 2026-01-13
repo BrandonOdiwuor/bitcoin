@@ -10,6 +10,7 @@
 #include <rpc/server.h>
 #include <test/util/setup_common.h>
 #include <univalue.h>
+#include <qt/test/util.h>
 
 #include <QTest>
 
@@ -140,3 +141,5 @@ void RPCNestedTests::rpcNestedTests()
     QVERIFY_EXCEPTION_THROWN(RPCConsole::RPCExecuteCommandLine(m_node, result, "rpcNestedTest(abc,,abc)"), std::runtime_error); //don't tolerate empty arguments when using ,
     QVERIFY_EXCEPTION_THROWN(RPCConsole::RPCExecuteCommandLine(m_node, result, "rpcNestedTest(abc,,)"), std::runtime_error); //don't tolerate empty arguments when using ,
 }
+
+REGISTER_QT_TEST(RPCNestedTests, app.node());
