@@ -25,3 +25,8 @@ void ConfirmMessage(QString* text, std::chrono::milliseconds msec)
         }
     });
 }
+
+TestRegistry& GetTestRegistry() {
+    static TestRegistry registry;
+    return registry;
+}

@@ -13,6 +13,7 @@
 #include <qt/rpcconsole.h>
 #include <test/util/setup_common.h>
 #include <validation.h>
+#include <qt/test/util.h>
 
 #include <QAction>
 #include <QLineEdit>
@@ -112,3 +113,5 @@ AppTests::HandleCallback::~HandleCallback()
         m_app_tests.m_app.exit(0);
     }
 }
+
+REGISTER_QT_TEST(AppTests, app);
