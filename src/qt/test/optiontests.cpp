@@ -10,6 +10,7 @@
 #include <qt/guiutil.h>
 #include <qt/test/optiontests.h>
 #include <test/util/setup_common.h>
+#include <qt/test/util.h>
 
 #include <QSettings>
 #include <QTest>
@@ -146,3 +147,5 @@ void OptionTests::extractFilter()
     filter = QString("Image (*.png *.jpg)");
     QCOMPARE(GUIUtil::ExtractFirstSuffixFromFilter(filter), "png");
 }
+
+REGISTER_QT_TEST(OptionTests, app.node());

@@ -6,6 +6,7 @@
 
 #include <qt/guiutil.h>
 #include <qt/walletmodel.h>
+#include <qt/test/util.h>
 
 #include <QUrl>
 
@@ -90,3 +91,5 @@ void URITests::uriTests()
     QVERIFY(rv.amount == 10000000000LL);
     QVERIFY(rv.label == QString("%3F"));
 }
+
+REGISTER_QT_TEST(URITests);

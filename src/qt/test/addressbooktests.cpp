@@ -225,3 +225,7 @@ void AddressBookTests::addressBookTests()
 #endif
     TestAddAddressesToSendBook(m_node);
 }
+
+#ifdef ENABLE_WALLET
+    REGISTER_QT_TEST(AddressBookTests, app.node());
+#endif
