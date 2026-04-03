@@ -2,9 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin-build-config.h> // IWYU pragma: keep
-
 #include <common/run_command.h>
+
+#include <bitcoin-build-config.h> // IWYU pragma: keep
 
 #include <tinyformat.h>
 #include <univalue.h>
@@ -13,6 +13,10 @@
 #ifdef ENABLE_EXTERNAL_SIGNER
 #include <util/subprocess.h>
 #endif // ENABLE_EXTERNAL_SIGNER
+
+#include <sstream>
+#include <stdexcept>
+#include <utility>
 
 UniValue RunCommandParseJSON(const std::vector<std::string>& cmd_args, const std::string& str_std_in)
 {

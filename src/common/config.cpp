@@ -9,20 +9,17 @@
 #include <sync.h>
 #include <tinyformat.h>
 #include <univalue.h>
-#include <util/chaintype.h>
 #include <util/fs.h>
 #include <util/string.h>
 
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <list>
 #include <map>
-#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>

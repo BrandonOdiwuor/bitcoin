@@ -10,7 +10,6 @@
 #include <util/fs.h>
 #include <util/translation.h>
 
-#include <algorithm>
 #include <exception>
 #include <optional>
 

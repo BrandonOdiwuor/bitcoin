@@ -2,17 +2,18 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin-build-config.h> // IWYU pragma: keep
-
 #include <common/netif.h>
+
+#include <bitcoin-build-config.h> // IWYU pragma: keep
+#include <compat/compat.h>
 
 #include <logging.h>
 #include <netbase.h>
 #include <util/check.h>
 #include <util/sock.h>
-#include <util/syserror.h>
 
 #if defined(__linux__)
+#include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #elif defined(__FreeBSD__)
 #include <osreldate.h>
@@ -34,6 +35,12 @@
 #include <ifaddrs.h>
 #endif
 
+#include <cerrno>
+#include <cstdint>
+#include <cstring>
+#include <functional>
+#include <memory>
+#include <string>
 #include <type_traits>
 
 namespace {

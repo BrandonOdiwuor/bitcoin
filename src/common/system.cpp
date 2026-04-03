@@ -3,9 +3,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bitcoin-build-config.h> // IWYU pragma: keep
-
 #include <common/system.h>
+
+#include <bitcoin-build-config.h> // IWYU pragma: keep
 
 #include <logging.h>
 #include <util/string.h>
@@ -18,6 +18,7 @@
 #include <windows.h>
 #else
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #endif
 
@@ -29,6 +30,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <limits>
 #include <locale>
 #include <optional>
 #include <stdexcept>

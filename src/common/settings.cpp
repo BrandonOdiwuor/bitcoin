@@ -10,7 +10,6 @@
 #include <univalue.h>
 #include <util/fs.h>
 
-#include <algorithm>
 #include <fstream>
 #include <iterator>
 #include <map>

@@ -6,8 +6,10 @@
 #include <interfaces/handler.h>
 
 #include <boost/signals2/connection.hpp>
+#include <functional>
 #include <memory>
 #include <utility>
+#include <string>
 
 namespace common {
 namespace {

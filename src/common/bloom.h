@@ -6,6 +6,7 @@
 #define BITCOIN_COMMON_BLOOM_H
 
 #include <serialize.h>
+#include <cstdint>
 #include <span.h>
 
 #include <vector>
