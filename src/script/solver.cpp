@@ -3,13 +3,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <script/solver.h>
+
 #include <pubkey.h>
 #include <script/interpreter.h>
 #include <script/script.h>
-#include <script/solver.h>
-#include <span.h>
 
-#include <algorithm>
 #include <cassert>
 #include <string>
 

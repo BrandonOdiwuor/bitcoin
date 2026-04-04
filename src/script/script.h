@@ -14,8 +14,9 @@
 #include <util/hash_type.h>
 
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
-#include <cstring>
+#include <iterator>
 #include <limits>
 #include <span>
 #include <stdexcept>
