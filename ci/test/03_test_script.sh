@@ -20,6 +20,7 @@ export ASAN_OPTIONS="detect_leaks=1:detect_stack_use_after_return=1:check_initia
 export LSAN_OPTIONS="suppressions=${BASE_ROOT_DIR}/test/sanitizer_suppressions/lsan"
 export TSAN_OPTIONS="suppressions=${BASE_ROOT_DIR}/test/sanitizer_suppressions/tsan:halt_on_error=1:second_deadlock_stack=1"
 export UBSAN_OPTIONS="suppressions=${BASE_ROOT_DIR}/test/sanitizer_suppressions/ubsan:print_stacktrace=1:halt_on_error=1:report_error_type=1"
+export TYSAN_OPTIONS="verbosity=1:print_stacktrace=1:halt_on_error=1"
 
 echo "Number of available processing units: $(nproc)"
 if [ "$CI_OS_NAME" == "macos" ]; then
@@ -235,6 +236,14 @@ if [[ "${RUN_IWYU}" == true ]]; then
 
   run_iwyu "compile_commands_iwyu_warnings.json"
   git --no-pager diff
+fi
+
+if [[ "${RUN_TYSAN}" == true ]]; then
+  echo "=== Running TypeSanitizer (TySan) ==="
+  echo "TYSAN_OPTIONS=${TYSAN_OPTIONS}"
+
+  "${BASE_BUILD_DIR}/bin/bitcoind" \
+    -regtest
 fi
 
 if [ "$RUN_FUZZ_TESTS" = "true" ]; then
