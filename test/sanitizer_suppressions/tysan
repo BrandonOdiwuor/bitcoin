@@ -1,0 +1,18 @@
+# TypeSanitizer suppressions for Bitcoin Core
+
+# 1. Boost.UnitTest framework — massive source of false positives
+fun:*boost::unit_test*
+fun:boost::unit_test::log_entry_data*
+fun:boost::unit_test::unit_test_log_t*
+fun:boost::unit_test::log_checkpoint_data*
+fun:boost::execution_monitor*
+
+# 2. libc++ containers
+fun:std::__1::__tree*
+fun:std::__1::map*
+fun:std::__1::set*
+fun:std::__1::vector*
+fun:std::__1::__function::__value_func*
+
+src:src/leveldb/*
+src:src/secp256k1/*
