@@ -1,0 +1,50 @@
+name: Lint
+
+on:
+  workflow_call:
+    inputs:
+      runs_on:
+        description: 'Full runs-on expression (supports Cirrus or GHA)'
+        required: false
+        type: string
+        default: 'ubuntu-24.04'
+      cache_provider:
+        description: 'Cache provider passed to configure-docker (gha or cirrus)'
+        required: false
+        type: string
+        default: 'gha'
+      lint_path:
+        description: 'Optional path to lint (for subtree-only mode)'
+        required: false
+        type: string
+        default: '.'
+
+jobs:
+  lint:
+    name: 'lint'
+    runs-on: ${{ inputs.runs_on }}
+    timeout-minutes: 20
+    env:
+      CONTAINER_NAME: "bitcoin-linter"
+      LINT_PATH: ${{ inputs.lint_path }}
+    steps:
+      - name: Annotate with pull request number
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "::notice title=debug_pull_request_number_str::${{ github.event.number }}"
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Configure Docker
+        uses: ./.github/actions/configure-docker
+        with:
+          cache-provider: ${{ inputs.cache_provider }}
+
+      - name: CI script
+        run: |
+          git worktree add ../lint-worktree HEAD
+          ../lint-worktree/ci/lint.py

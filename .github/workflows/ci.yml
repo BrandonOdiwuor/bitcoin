@@ -580,26 +580,9 @@ jobs:
   lint:
     name: 'lint'
     needs: runners
-    runs-on: ${{ needs.runners.outputs.provider == 'cirrus' && 'ghcr.io/cirruslabs/ubuntu-runner-amd64:24.04-xs' || 'ubuntu-24.04' }}
     if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' }}
-    timeout-minutes: 20
-    env:
-      CONTAINER_NAME: "bitcoin-linter"
-    steps:
-      - *ANNOTATION_PR_NUMBER
-
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          ref: *CHECKOUT_REF_TMPL
-          fetch-depth: 0
-
-      - name: Configure Docker
-        uses: ./.github/actions/configure-docker
-        with:
-          cache-provider: ${{ needs.runners.outputs.provider }}
-
-      - name: CI script
-        run: |
-          git worktree add ../lint-worktree HEAD
-          ../lint-worktree/ci/lint.py
+    uses: ./.github/workflows/lint.yml
+    with:
+      runs_on: ${{ needs.runners.outputs.provider == 'cirrus' && 'ghcr.io/cirruslabs/ubuntu-runner-amd64:24.04-xs' || 'ubuntu-24.04' }}
+      cache_provider: ${{ needs.runners.outputs.provider }}
+      lint_path: '.'
