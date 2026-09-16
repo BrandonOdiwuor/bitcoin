@@ -100,3 +100,6 @@ function(create_test_directory_links)
 endfunction()
 
 create_test_directory_links()
+
+include(RegisterFunctionalTests)
+register_functional_tests()

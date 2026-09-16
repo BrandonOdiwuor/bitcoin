@@ -137,6 +137,8 @@ option(WITH_CCACHE "Attempt to use ccache for compiling." ON)
 
 option(INSTALL_MAN "Install man pages." ON)
 
+option(BUILD_FUNCTIONAL_TESTS "Register functional tests with CTest from test_runner.py" OFF)
+
 set(APPEND_CPPFLAGS "" CACHE STRING "Preprocessor flags that are appended to the command line after all other flags added by the build system. This variable is intended for debugging and special builds.")
 set(APPEND_CFLAGS "" CACHE STRING "C compiler flags that are appended to the command line after all other flags added by the build system. This variable is intended for debugging and special builds.")
 set(APPEND_CXXFLAGS "" CACHE STRING "(Objective) C++ compiler flags that are appended to the command line after all other flags added by the build system. This variable is intended for debugging and special builds.")
@@ -627,7 +629,7 @@ if(DEFINED ENV{LDFLAGS})
   deduplicate_flags(CMAKE_EXE_LINKER_FLAGS)
 endif()
 
-if(BUILD_TESTS)
+if(BUILD_TESTS OR BUILD_FUNCTIONAL_TESTS)
   enable_testing()
 endif()
 

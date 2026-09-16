@@ -411,6 +411,13 @@ BASE_SCRIPTS = [
 # Place EXTENDED_SCRIPTS first since it has the 3 longest running tests
 ALL_SCRIPTS = EXTENDED_SCRIPTS + BASE_SCRIPTS
 
+def print_ctest_list():
+    """Emit one CTest row per runner entry: kind<TAB>spec."""
+    for script in EXTENDED_SCRIPTS:
+        print(f"extended\t{script}")
+    for script in BASE_SCRIPTS:
+        print(f"base\t{script}")
+
 NON_SCRIPTS = [
     # These are python files that live in the functional tests directory, but are not test scripts.
     "combine_logs.py",
@@ -429,6 +436,7 @@ def main():
     parser.add_argument('--ansi', action='store_true', default=sys.stdout.isatty(), help="Use ANSI colors and dots in output (enabled by default when standard output is a TTY)")
     parser.add_argument('--combinedlogslen', '-c', type=int, default=0, metavar='n', help='On failure, print a log (of length n lines) to the console, combined from the test framework and all test nodes.')
     parser.add_argument('--coverage', action='store_true', help='generate a basic coverage report for the RPC interface')
+    parser.add_argument('--ctest-list', action='store_true', help='Print the functional test list as TSV for CMake/CTest and exit')
     parser.add_argument('--exclude', '-x', action='append', help='specify a script to exclude. Can be specified multiple times. The .py extension is optional.')
     parser.add_argument('--extended', action='store_true', help='run the extended test suite in addition to the basic tests')
     parser.add_argument('--help', '-h', '-?', action='store_true', help='print help text and exit')
@@ -442,6 +450,9 @@ def main():
     parser.add_argument('--resultsfile', '-r', help='store test results (as CSV) to the provided file')
 
     args, unknown_args = parser.parse_known_args()
+    if args.ctest_list:
+        print_ctest_list()
+        return
     # Fail on self-check warnings before running the tests.
     fail_on_warn = True
     if not args.ansi:
