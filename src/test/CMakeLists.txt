@@ -218,6 +218,13 @@ if(ENABLE_IPC)
   add_subdirectory(${PROJECT_SOURCE_DIR}/src/ipc/test ipc)
 endif()
 
-add_all_test_targets()
+discover_tests(test_bitcoin
+  DISCOVERY_ARGS --list_content
+  DISCOVERY_MATCH "^([A-Za-z0-9_]+)\\\\*"
+  TEST_NAME_REPLACEMENT "\\\\1"
+  TEST_ARGS_REPLACEMENT "--run_test=\\\\1 --catch_system_error=no --log_level=test_suite -- -printtoconsole=1"
+  PROPERTIES
+    SKIP_REGULAR_EXPRESSION "no test cases matching filter;skipping script_assets_test"
+)
 
 install_binary_component(test_bitcoin INTERNAL)
