@@ -3,7 +3,7 @@
 # file COPYING or https://opensource.org/license/mit/.
 #
 # One CTest test per test_runner.py ALL_SCRIPTS entry.
-# List: python3 test/functional/test_runner.py --ctest-list
+# create_cache runs first (FIXTURES_SETUP), same contract as test_runner.py.
 
 function(register_functional_tests)
   if(NOT BUILD_FUNCTIONAL_TESTS)
@@ -29,7 +29,24 @@ function(register_functional_tests)
 
   set(_func_dir "${PROJECT_BINARY_DIR}/test/functional")
   set(_tmp_root "${PROJECT_BINARY_DIR}/test/tmp")
-  set(_config "${PROJECT_BINARY_DIR}/test/config.ini")
+  set(_config   "${PROJECT_BINARY_DIR}/test/config.ini")
+  set(_cache    "${PROJECT_BINARY_DIR}/test/cache")
+  set(_cache_tmp "${_tmp_root}/functional.create_cache")
+
+  add_test(
+    NAME functional.create_cache
+    COMMAND /bin/sh -c
+            "rm -rf \"${_cache}\" \"${_cache_tmp}\" && exec \"${Python3_EXECUTABLE}\" \"${_func_dir}/create_cache.py\" --configfile=\"${_config}\" --cachedir=\"${_cache}\" --tmpdir=\"${_cache_tmp}\" --portseed=0"
+  )
+  set_tests_properties(functional.create_cache PROPERTIES
+    LABELS "functional;setup"
+    FIXTURES_SETUP FunctionalCache
+    TIMEOUT 120
+    COST 1
+    PROCESSORS 1
+    REQUIRED_FILES "${_config};${_func_dir}/create_cache.py"
+    WORKING_DIRECTORY "${_func_dir}"
+  )
 
   set(_portseed 1)
   string(REPLACE "\n" ";" _lines "${_list}")
@@ -50,6 +67,10 @@ function(register_functional_tests)
     list(REMOVE_AT _spec_args 0)
 
     get_filename_component(_base "${_script}" NAME_WE)
+    if(_base STREQUAL "create_cache")
+      continue()
+    endif()
+
     set(_tname "functional.${_base}")
     foreach(_arg IN LISTS _spec_args)
       string(REGEX REPLACE "^--" "" _arg_id "${_arg}")
@@ -72,7 +93,7 @@ function(register_functional_tests)
     add_test(
       NAME ${_tname}
       COMMAND /bin/sh -c
-              "rm -rf \"${_tmpdir}\" && exec \"${Python3_EXECUTABLE}\" \"${_func_dir}/${_script}\" ${_spec_args} --configfile=\"${_config}\" --tmpdir=\"${_tmpdir}\" --portseed=${_portseed}"
+              "rm -rf \"${_tmpdir}\" && exec \"${Python3_EXECUTABLE}\" \"${_func_dir}/${_script}\" ${_spec_args} --configfile=\"${_config}\" --cachedir=\"${_cache}\" --tmpdir=\"${_tmpdir}\" --portseed=${_portseed}"
     )
     set_tests_properties(${_tname} PROPERTIES
       LABELS "${_labels}"
@@ -80,6 +101,7 @@ function(register_functional_tests)
       COST ${_cost}
       PROCESSORS 1
       SKIP_RETURN_CODE 77
+      FIXTURES_REQUIRED FunctionalCache
       REQUIRED_FILES "${_config};${_func_dir}/${_script}"
       WORKING_DIRECTORY "${_func_dir}"
     )
