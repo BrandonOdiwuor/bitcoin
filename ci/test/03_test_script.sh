@@ -234,60 +234,7 @@ if [ "${RUN_TIDY}" = "true" ]; then
 fi
 
 if [[ "${RUN_IWYU}" == true ]]; then
-  # Skip subtrees. They are maintained upstream, and IWYU output for them from
-  # this job's IWYU version and mapping files can disagree with upstream (e.g.
-  # libmultiprocess runs IWYU in its own CI and passes there).
-  SUBTREES=$(python3 -c 'import runpy, sys; print("|".join(runpy.run_path(sys.argv[1])["SHARED_EXCLUDED_SUBTREES"]))' "${BASE_ROOT_DIR}/test/lint/lint_ignore_dirs.py")
-  jq --arg patterns "$SUBTREES" 'map(select(.file | test($patterns) | not))' "${BASE_BUILD_DIR}/compile_commands.json" > "${BASE_BUILD_DIR}/compile_commands_no_subtrees.json"
-  mv "${BASE_BUILD_DIR}/compile_commands_no_subtrees.json" "${BASE_BUILD_DIR}/compile_commands.json"
-
-  # TODO: Consider enforcing IWYU across the entire codebase.
-  FILES_WITH_ENFORCED_IWYU='/src/((bench|common|consensus|crypto|index|init|kernel|primitives|rpc|script|univalue/(lib|test)|util|zmq)/.*|node/(blockstorage|interfaces|miner|mining_args|utxo_snapshot)|test/fuzz/(kitchen_sink|minisketch|parse_univalue)|clientversion|core_io|rest|signet|init)\.cpp'
-  jq --arg patterns "$FILES_WITH_ENFORCED_IWYU" 'map(select(.file | test($patterns)))' "${BASE_BUILD_DIR}/compile_commands.json" > "${BASE_BUILD_DIR}/compile_commands_iwyu_errors.json"
-  jq --arg patterns "$FILES_WITH_ENFORCED_IWYU" 'map(select(.file | test($patterns) | not))' "${BASE_BUILD_DIR}/compile_commands.json" > "${BASE_BUILD_DIR}/compile_commands_iwyu_warnings.json"
-
-  cd "${BASE_ROOT_DIR}"
-
-  run_iwyu() {
-    mv "${BASE_BUILD_DIR}/$1" "${BASE_BUILD_DIR}/compile_commands.json"
-    {
-      python3 /include-what-you-use/mapgen/iwyu-mapgen-clang-intrin.py --lang imp "$("clang-${IWYU_LLVM_V}" -print-resource-dir)/include" > "${BASE_BUILD_DIR}/clang.intrinsics.imp"
-      python3 /include-what-you-use/iwyu_tool.py \
-             -p "${BASE_BUILD_DIR}" "${MAKEJOBS}" -- \
-             -Xiwyu --cxx17ns \
-             -Xiwyu --mapping_file="${BASE_ROOT_DIR}/contrib/devtools/iwyu/bitcoin.core.imp" \
-             -Xiwyu --mapping_file="${BASE_BUILD_DIR}/clang.intrinsics.imp" \
-             -Xiwyu --max_line_length=160 \
-             -Xiwyu --check_also='*/common/types\.h' \
-             -Xiwyu --check_also='*/consensus/*\.h' \
-             -Xiwyu --check_also='*/interfaces/*\.h' \
-             -Xiwyu --check_also='*/primitives/transaction_identifier\.h' \
-             -Xiwyu --check_also='*/rpc/protocol\.h' \
-             2>&1 || true
-    } | tee /tmp/iwyu_ci.out
-    python3 "/include-what-you-use/fix_includes.py" --nosafe_headers < /tmp/iwyu_ci.out
-    # Undo edits to subtree headers. Subtree sources are filtered out of the
-    # compilation database above, but IWYU can still edit a subtree header it
-    # treats as associated with a source file outside the subtree (e.g.
-    # minisketch.h for test/fuzz/minisketch.cpp).
-    python3 -c '
-import runpy
-import subprocess
-
-subtrees = runpy.run_path("test/lint/lint_ignore_dirs.py")["SHARED_EXCLUDED_SUBTREES"]
-subprocess.run(["git", "restore", "--", *subtrees], check=True)
-'
-    git diff -U1 | ./contrib/devtools/clang-format-diff.py -binary="clang-format-${IWYU_LLVM_V}" -p1 -i -v
-  }
-
-  run_iwyu "compile_commands_iwyu_errors.json"
-  if ! ( git --no-pager diff --exit-code ); then
-    echo "^^^ ⚠️ Failure generated from IWYU"
-    false
-  fi
-
-  run_iwyu "compile_commands_iwyu_warnings.json"
-  git --no-pager diff
+  "${BASE_ROOT_DIR}/ci/test/run-iwyu.py"
 fi
 
 if [ "$RUN_FUZZ_TESTS" = "true" ]; then
